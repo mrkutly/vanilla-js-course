@@ -1,0 +1,50 @@
+const video = document.querySelector('.webcam');
+window._myVid = video;
+const canvas = document.querySelector('.video');
+const ctx = canvas.getContext('2d');
+ctx.strokeStyle = 'lightblue';
+const faceCanvas = document.querySelector('.face');
+const faceCtx = canvas.getContext('2d');
+const faceDetector = new window.FaceDetector({
+  fastMode: true
+});
+
+async function populateVideo() {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: {
+      width: 1280,
+      height: 720
+    }
+  });
+  video.srcObject = stream;
+  await video.play(); // set the canvas sizes
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  faceCanvas.width = video.videoWidth;
+  faceCanvas.height = video.videoHeight;
+}
+
+async function detect() {
+  const faces = await faceDetector.detect(video);
+  faces.forEach(drawFace); // ask browser when the next animation frame is and run detect
+
+  requestAnimationFrame(detect);
+}
+
+function drawFace(face) {
+  const {
+    width,
+    height,
+    top,
+    left
+  } = face.boundingBox;
+  console.table({
+    width,
+    height,
+    top,
+    left
+  });
+}
+
+populateVideo().then(detect);
